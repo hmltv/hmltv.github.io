@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="repository.meinname" name="Mein Privates Kodi Repo" version="1.0.0" provider-name="DeinName">
+<addon id="repository.hmltv" name="hmltv Repo" version="1.0.0" provider-name="HMLTV">
     <requires>
         <import addon="xbmc.addon" version="12.0.0"/>
     </requires>
-    <extension point="xbmc.addon.repository" name="Mein Privates Kodi Repo">
+    <extension point="xbmc.addon.repository" name="hmltv addon">
         <dir>
             <info compressed="false">https://github.io</info>
             <checksum>https://github.io.md5</checksum>
