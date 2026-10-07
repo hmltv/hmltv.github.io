@@ -2,6 +2,7 @@ import os
 import zipfile
 import hashlib
 import xml.etree.ElementTree as ET
+import shutil
 
 def make_zip(source_dir, output_zip):
     with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -12,62 +13,50 @@ def make_zip(source_dir, output_zip):
                 zipf.write(file_path, rel_path)
 
 def generate_repo():
-    print("Starte manuelles Verpacken...")
+    print("Generiere XML und ZIPs...")
     
+    # Sicherstellen, dass das Haupt-Repo-ZIP existiert
     repo_dir = "repository.hmltv"
-    zip_name = ""
-    
     if os.path.exists(repo_dir):
-        xml_path = os.path.join(repo_dir, "addon.xml")
-        if os.path.exists(xml_path):
-            tree = ET.parse(xml_path)
-            root = tree.getroot()
-            version = root.get("version", "1.0.2")
-            
-            zip_name = f"{repo_dir}-{version}.zip"
-            output_path = os.path.join(repo_dir, zip_name)
-            
-            # ZIP direkt im Unterordner erstellen
-            make_zip(repo_dir, output_path)
-            
-            # WICHTIG: Eine Kopie der ZIP direkt ins Hauptverzeichnis legen, damit Kodi sie sofort sieht!
-            import shutil
-            shutil.copy(output_path, zip_name)
-            print(f"Erfolgreich erstellt und kopiert: {zip_name}")
-        else:
-            print(f"Fehler: Keine addon.xml im Ordner {repo_dir} gefunden!")
-    else:
-        print(f"Fehler: Ordner {repo_dir} existiert nicht!")
+        zip_name = f"{repo_dir}-1.0.5.zip"
+        make_zip(repo_dir, os.path.join(repo_dir, zip_name))
+        shutil.copy(os.path.join(repo_dir, zip_name), zip_name)
 
-    # Zentrale Manifest-Dateien erstellen
+    # Erstelle dieaddons.xml strictly nach Kodi-Standard
     root_xml = ET.Element("addons")
+    
+    # Gehe durch alle Ordner (Add-ons)
     for folder in os.listdir("."):
         if os.path.isdir(folder) and not folder.startswith(".") and not folder.startswith("_"):
             xml_f = os.path.join(folder, "addon.xml")
             if os.path.exists(xml_f):
                 try:
-                    addon_tree = ET.parse(xml_f)
-                    root_xml.append(addon_tree.getroot())
+                    # XML einlesen und säubern
+                    parser = ET.XMLParser(encoding="utf-8")
+                    addon_tree = ET.parse(xml_f, parser=parser)
+                    addon_root = addon_tree.getroot()
+                    root_xml.append(addon_root)
                 except Exception as e:
-                    print(f"Fehler beim Lesen von {xml_f}: {e}")
+                    print(f"Fehler bei XML-Parsing in {folder}: {e}")
                     
-    with open("addons.xml", "w", encoding="utf-8") as f:
-        f.write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n')
-        f.write(ET.tostring(root_xml, encoding="utf-8").decode("utf-8"))
+    #addons.xml schreiben
+    xml_str = ET.tostring(root_xml, encoding="utf-8")
+    with open("addons.xml", "wb") as f:
+        f.write(b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n')
+        f.write(xml_str)
         
+    # MD5 absolut sauber ohne Zeilenumbrüche oder Zusatzzeichen generieren
     with open("addons.xml", "rb") as f:
         md5_hash = hashlib.md5(f.read()).hexdigest()
     with open("addons.xml.md5", "w", encoding="utf-8") as f:
-        f.write(md5_hash)
+        f.write(md5_hash.strip())
         
-    # JETZT BORT DAS SKRIPT DIE STARTSEITE FÜR KODI
-    if zip_name:
-        with open("index.html", "w", encoding="utf-8") as html:
-            html.write(f'<!DOCTYPE html>\n<html>\n<head><title>HMLTV Repo</title></head>\n<body>\n')
-            html.write(f'<h1>HMLTV Kodi Repository</h1>\n')
-            html.write(f'<a href="{zip_name}">{zip_name}</a>\n')
-            html.write(f'</body>\n</html>\n')
-        print("index.html für Kodi erfolgreich generiert!")
+    # index.html für das Kodi Directory Browsing
+    with open("index.html", "w", encoding="utf-8") as html:
+        html.write('<!DOCTYPE html>\n<html>\n<head><title>HMLTV Repo</title></head>\n<body>\n<h1>HMLTV Kodi Repository</h1>\n')
+        if os.path.exists(f"{repo_dir}-1.0.5.zip"):
+            html.write(f'<a href="{repo_dir}-1.0.5.zip">{repo_dir}-1.0.5.zip</a><br>\n')
+        html.write('</body>\n</html>\n')
 
 if __name__ == "__main__":
     generate_repo()
