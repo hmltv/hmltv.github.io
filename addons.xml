@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addons><addon id="repository.hmltv" name="HMLTV Kodi Repo" version="1.0.1" provider-name="HMLTV">
+<addons><addon id="repository.hmltv" name="HMLTV Kodi Repo" version="1.0.2" provider-name="HMLTV">
     <requires>
         <import addon="xbmc.addon" version="12.0.0" />
-        
-        <import addon="plugin.video.xstream" />
-        <import addon="script.vavoo" />
     </requires>
     <extension point="xbmc.addon.repository" name="HMLTV Kodi Repo">
         <dir>
             <info compressed="false">https://github.io</info>
             <checksum>https://github.io.md5</checksum>
-            <datadir zip="true">https://github.io</datadir>
+            <datadir zip="true">https://hmltv.github.io/</datadir>
         </dir>
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary lang="de">Automatisches Update-Repo für xStream und Vavoo</summary>
-        <description lang="de">Dieses Repository hält xStream und Vavoo auf all meinen Geräten aktuell und installiert sie automatisch.</description>
+        <description lang="de">Dieses Repository hält xStream und Vavoo auf all meinen Geräten aktuell.</description>
         <platform>all</platform>
     </extension>
 </addon></addons>
